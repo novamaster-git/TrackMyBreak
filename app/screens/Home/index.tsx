@@ -1,15 +1,26 @@
 import {useTheme} from '@react-navigation/native';
-import React from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Break from '../../assets/images/svg/Break.svg';
 import Office from '../../assets/images/svg/Office.svg';
+import Graph from '../../assets/images/svg/graph.svg';
+import Settings from '../../assets/images/svg/settings.svg';
+import BlankSpacer from '../../components/BlankSpacer';
 import Header from '../../components/Header';
 import WallClock from '../../components/WallClock';
 import {fonts} from '../../theme/fonts';
-import {wp} from '../../utils/responsive.util';
+import {hp, wp} from '../../utils/responsive.util';
 function Home() {
   const {colors} = useTheme();
   const data = [1, 2, 3, 4, 5, 6];
+  const [openSettingModal, setOpenSettingsModal] = useState(false);
   const renderItem = ({item, index}) => {
     const isEnd = index === data.length - 1;
     return (
@@ -79,7 +90,12 @@ function Home() {
   };
   return (
     <View style={{flex: 1, backgroundColor: 'white'}}>
-      <Header title="Track My Break" />
+      <Header
+        title="Track My Break"
+        onPressMenu={() => {
+          setOpenSettingsModal(prev => !prev);
+        }}
+      />
       <WallClock />
       <View
         style={{
@@ -193,6 +209,90 @@ function Home() {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+        visible={openSettingModal}
+        transparent={true}
+        animationType="slide">
+        <View style={{flex: 1, backgroundColor: '#0000002f'}}>
+          <TouchableOpacity
+            onPress={() => setOpenSettingsModal(false)}
+            style={{flex: 1}}
+          />
+          <View
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: wp(2),
+            }}>
+            <View
+              style={{
+                width: wp(10),
+                height: wp(2),
+                backgroundColor: 'grey',
+                borderRadius: wp(5),
+              }}
+            />
+          </View>
+          <View
+            style={{
+              height: hp(15),
+              backgroundColor: 'white',
+              borderTopRightRadius: wp(4),
+              borderTopLeftRadius: wp(4),
+              paddingHorizontal: wp(5),
+              paddingTop: wp(5),
+            }}>
+            <View style={{width: '100%', flexDirection: 'row'}}>
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#B39DDB',
+                  borderRadius: wp(3),
+                  marginRight: wp(2),
+                  padding: wp(2),
+                }}>
+                <Settings height={wp(10)} width={wp(10)} />
+                <BlankSpacer height={wp(2)} />
+                <Text
+                  style={{
+                    fontSize: wp(4),
+                    fontFamily: fonts.RobotoMedium,
+                    color: 'white',
+                    lineHeight: wp(4),
+                  }}>
+                  Settings
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#9FA8DA',
+                  borderRadius: wp(3),
+                  marginLeft: wp(2),
+                  padding: wp(2),
+                }}>
+                <Graph height={wp(10)} width={wp(10)} />
+                <BlankSpacer height={wp(2)} />
+                <Text
+                  style={{
+                    fontSize: wp(4),
+                    fontFamily: fonts.RobotoMedium,
+                    color: colors.white,
+                    lineHeight: wp(4),
+                  }}>
+                  History
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -27,7 +27,11 @@ function WallClock({onPressMenu = () => {}}: HeaderTypes): JSX.Element {
             <Text style={[style.clockTime, {color: 'grey'}]}>1h 2m 20s</Text>
           </View>
         </View>
-        <View style={style.singleClock}>
+        <View
+          style={[
+            style.singleClock,
+            {borderLeftWidth: wp(0.2), borderColor: colors.secondary},
+          ]}>
           <View>
             <Text style={[style.clockTitle, {color: colors.green}]}>
               Ongoing break
@@ -46,7 +50,11 @@ function WallClock({onPressMenu = () => {}}: HeaderTypes): JSX.Element {
             <Text style={[style.clockTime, {color: 'grey'}]}>10:21 AM</Text>
           </View>
         </View>
-        <View style={style.singleClock}>
+        <View
+          style={[
+            style.singleClock,
+            {borderLeftWidth: wp(0.2), borderColor: colors.secondary},
+          ]}>
           <View>
             <Text style={[style.clockTitle, {color: colors.green}]}>
               Office Out
@@ -54,7 +62,11 @@ function WallClock({onPressMenu = () => {}}: HeaderTypes): JSX.Element {
             <Text style={[style.clockTime, {color: 'grey'}]}>7:12 AM</Text>
           </View>
         </View>
-        <View style={style.singleClock}>
+        <View
+          style={[
+            style.singleClock,
+            {borderLeftWidth: wp(0.2), borderColor: colors.secondary},
+          ]}>
           <View>
             <Text style={[style.clockTitle, {color: colors.green}]}>
               Total Time

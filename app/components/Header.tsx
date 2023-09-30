@@ -18,7 +18,9 @@ function Header({title, onPressMenu = () => {}}: HeaderTypes): JSX.Element {
           backgroundColor: colors.primary,
         },
       ]}>
-      <TouchableOpacity onPress={() => {}} style={{paddingHorizontal: wp(3)}}>
+      <TouchableOpacity
+        onPress={onPressMenu}
+        style={{paddingHorizontal: wp(3), paddingVertical: wp(4)}}>
         <HanBerger width={wp(5)} height={wp(5)} />
       </TouchableOpacity>
       <Text style={style.titleText}>{title}</Text>
@@ -30,7 +32,7 @@ const style = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: wp(3),
+    paddingVertical: wp(1),
     paddingHorizontal: wp(2),
   },
   titleText: {
