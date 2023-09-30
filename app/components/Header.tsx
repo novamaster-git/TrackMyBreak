@@ -2,13 +2,19 @@ import {useTheme} from '@react-navigation/native';
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import HanBerger from '../assets/images/svg/hanburder.svg';
+import Back from '../assets/images/svg/back.svg';
 import {fonts} from '../theme/fonts';
 import {wp} from '../utils/responsive.util';
 type HeaderTypes = {
   title: string;
+  isBack?: boolean;
   onPressMenu?: () => void;
 };
-function Header({title, onPressMenu = () => {}}: HeaderTypes): JSX.Element {
+function Header({
+  title,
+  onPressMenu = () => {},
+  isBack = false,
+}: HeaderTypes): JSX.Element {
   const {colors} = useTheme();
   return (
     <View
@@ -21,7 +27,11 @@ function Header({title, onPressMenu = () => {}}: HeaderTypes): JSX.Element {
       <TouchableOpacity
         onPress={onPressMenu}
         style={{paddingHorizontal: wp(3), paddingVertical: wp(4)}}>
-        <HanBerger width={wp(5)} height={wp(5)} />
+        {isBack ? (
+          <Back width={wp(6)} height={wp(6)} style={{color: 'white'}} />
+        ) : (
+          <HanBerger width={wp(5)} height={wp(5)} />
+        )}
       </TouchableOpacity>
       <Text style={style.titleText}>{title}</Text>
     </View>

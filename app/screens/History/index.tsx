@@ -8,20 +8,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Break from '../../assets/images/svg/Break.svg';
-import Office from '../../assets/images/svg/Office.svg';
-import Graph from '../../assets/images/svg/graph.svg';
-import Settings from '../../assets/images/svg/settings.svg';
+import DatePicker from 'react-native-date-picker';
 import BlankSpacer from '../../components/BlankSpacer';
 import Header from '../../components/Header';
 import WallClock from '../../components/WallClock';
 import {fonts} from '../../theme/fonts';
 import {hp, wp} from '../../utils/responsive.util';
-function Home() {
+function History() {
   const navigation = useNavigation();
   const {colors} = useTheme();
   const data = [1, 2, 3, 4, 5, 6];
   const [openSettingModal, setOpenSettingsModal] = useState(false);
+  const [date, setDate] = useState(new Date());
   const renderItem = ({item, index}: any) => {
     const isEnd = index === data.length - 1;
     return (
@@ -92,12 +90,18 @@ function Home() {
   return (
     <View style={{flex: 1, backgroundColor: 'white'}}>
       <Header
-        title="Track My Break"
+        title="History"
+        isBack={true}
         onPressMenu={() => {
-          setOpenSettingsModal(prev => !prev);
+          navigation.goBack();
         }}
       />
-      <WallClock />
+      <WallClock
+        showDate={true}
+        onPressDate={() => {
+          setOpenSettingsModal(true);
+        }}
+      />
       <View
         style={{
           backgroundColor: colors.greyBlue,
@@ -119,96 +123,6 @@ function Home() {
           renderItem={renderItem}
           contentContainerStyle={{paddingBottom: wp(1)}}
         />
-      </View>
-      <View
-        style={{
-          width: '100%',
-          flexDirection: 'row',
-          paddingVertical: wp(2),
-          backgroundColor: colors.primary,
-          borderTopWidth: wp(0.2),
-          borderColor: colors.lightGrey,
-        }}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: wp(2),
-          }}>
-          <TouchableOpacity
-            onPress={() => {}}
-            style={{
-              backgroundColor: colors.red,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingVertical: wp(2),
-              width: '100%',
-              borderRadius: wp(1),
-              flexDirection: 'row',
-            }}>
-            <View
-              style={{
-                padding: wp(1.5),
-                borderRadius: wp(10),
-                backgroundColor: colors.lightRed,
-                marginRight: wp(2),
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Office width={wp(5)} height={wp(5)} style={{color: 'white'}} />
-            </View>
-            <Text
-              style={{
-                fontFamily: fonts.RobotoBlack,
-                color: 'white',
-                fontSize: wp(5),
-                letterSpacing: wp(0.2),
-              }}>
-              Office In
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: wp(2),
-          }}>
-          <TouchableOpacity
-            onPress={() => {}}
-            style={{
-              backgroundColor: colors.green,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingVertical: wp(2),
-              width: '100%',
-              borderRadius: wp(1),
-              flexDirection: 'row',
-            }}>
-            <View
-              style={{
-                padding: wp(1.5),
-                borderRadius: wp(10),
-                backgroundColor: colors.lightGreen,
-                marginRight: wp(2),
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Break width={wp(5)} height={wp(5)} style={{color: 'white'}} />
-            </View>
-            <Text
-              style={{
-                fontFamily: fonts.RobotoBlack,
-                color: 'white',
-                fontSize: wp(5),
-                letterSpacing: wp(0.2),
-              }}>
-              Break In
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
       <Modal
         visible={openSettingModal}
@@ -237,63 +151,73 @@ function Home() {
           </View>
           <View
             style={{
-              height: hp(15),
+              height: hp(35),
               backgroundColor: 'white',
               borderTopRightRadius: wp(4),
               borderTopLeftRadius: wp(4),
               paddingHorizontal: wp(5),
               paddingTop: wp(5),
             }}>
-            <View style={{width: '100%', flexDirection: 'row'}}>
+            <Text
+              style={{
+                fontFamily: fonts.RobotoRegular,
+                fontSize: wp(5),
+                color: 'black',
+                textAlign: 'center',
+              }}>
+              Pickup Date
+            </Text>
+            <DatePicker
+              date={date}
+              onDateChange={setDate}
+              mode="date"
+              minimumDate={new Date()}
+            />
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+              }}>
               <TouchableOpacity
+                onPress={() => {}}
                 style={{
-                  flex: 1,
-                  alignItems: 'center',
+                  backgroundColor: colors.red,
                   justifyContent: 'center',
-                  backgroundColor: '#B39DDB',
-                  borderRadius: wp(3),
-                  marginRight: wp(2),
-                  padding: wp(2),
+                  alignItems: 'center',
+                  paddingVertical: wp(2),
+                  flex: 1,
+                  borderRadius: wp(1),
                 }}>
-                <Settings height={wp(10)} width={wp(10)} />
-                <BlankSpacer height={wp(2)} />
                 <Text
                   style={{
-                    fontSize: wp(4),
-                    fontFamily: fonts.RobotoMedium,
+                    fontFamily: fonts.RobotoBlack,
                     color: 'white',
-                    lineHeight: wp(4),
+                    fontSize: wp(5),
+                    letterSpacing: wp(0.2),
                   }}>
-                  Settings
+                  Today
                 </Text>
               </TouchableOpacity>
-
+              <BlankSpacer width={wp(2)} />
               <TouchableOpacity
-                onPress={() => {
-                  setOpenSettingsModal(false);
-                  setTimeout(() => {
-                    navigation.navigate('History');
-                  }, 100);
-                }}
+                onPress={() => {}}
                 style={{
-                  flex: 1,
-                  alignItems: 'center',
+                  backgroundColor: colors.green,
                   justifyContent: 'center',
-                  backgroundColor: '#9FA8DA',
-                  borderRadius: wp(3),
-                  marginLeft: wp(2),
-                  padding: wp(2),
+                  alignItems: 'center',
+                  paddingVertical: wp(2),
+                  flex: 1,
+                  borderRadius: wp(1),
+                  flexDirection: 'row',
                 }}>
-                <Graph height={wp(10)} width={wp(10)} />
-                <BlankSpacer height={wp(2)} />
                 <Text
                   style={{
-                    fontSize: wp(4),
-                    fontFamily: fonts.RobotoMedium,
-                    color: colors.white,
-                    lineHeight: wp(4),
+                    fontFamily: fonts.RobotoBlack,
+                    color: 'white',
+                    fontSize: wp(5),
+                    letterSpacing: wp(0.2),
                   }}>
-                  History
+                  Set
                 </Text>
               </TouchableOpacity>
             </View>
@@ -337,4 +261,4 @@ const style = StyleSheet.create({
     lineHeight: wp(5),
   },
 });
-export default Home;
+export default History;

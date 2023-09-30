@@ -1,14 +1,19 @@
 import {useTheme} from '@react-navigation/native';
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import HanBerger from '../assets/images/svg/hanburder.svg';
+import Backward from '../assets/images/svg/backward.svg';
+import Forward from '../assets/images/svg/forward.svg';
 import {fonts} from '../theme/fonts';
 import {hp, wp} from '../utils/responsive.util';
 import BlankSpacer from './BlankSpacer';
-type HeaderTypes = {
-  onPressMenu?: () => void;
+type WallClockType = {
+  onPressDate?: () => void;
+  showDate?: boolean;
 };
-function WallClock({onPressMenu = () => {}}: HeaderTypes): JSX.Element {
+function WallClock({
+  showDate = false,
+  onPressDate = () => {},
+}: WallClockType): JSX.Element {
   const {colors} = useTheme();
   return (
     <View
@@ -18,6 +23,48 @@ function WallClock({onPressMenu = () => {}}: HeaderTypes): JSX.Element {
           backgroundColor: colors.secondary,
         },
       ]}>
+      {showDate && (
+        <>
+          <View
+            style={[
+              {
+                width: '90%',
+                flexDirection: 'row',
+                borderRadius: wp(1),
+                paddingHorizontal: wp(2),
+              },
+              {backgroundColor: colors.white, alignItems: 'center'},
+            ]}>
+            <TouchableOpacity
+              style={{
+                paddingVertical: wp(5),
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Backward height={wp(5)} width={wp(5)} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onPressDate} style={style.singleClock}>
+              {/* <View> */}
+              <Text style={[style.clockTitle, {color: colors.red}]}>Date</Text>
+              <Text style={[style.clockTime, {color: 'grey'}]}>
+                12 Sep 2023
+              </Text>
+              {/* </View> */}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: wp(5),
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Forward height={wp(5)} width={wp(5)} />
+            </TouchableOpacity>
+          </View>
+          <BlankSpacer height={hp(2)} />
+        </>
+      )}
       <View style={[style.cardContainer, {backgroundColor: colors.white}]}>
         <View style={style.singleClock}>
           <View>
