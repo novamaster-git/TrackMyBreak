@@ -1,5 +1,5 @@
-apply plugin: "com.android.application"
-apply plugin: "com.facebook.react"
+apply plugin: 'com.android.application'
+apply plugin: 'com.facebook.react'
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -43,11 +43,11 @@ react {
     // extraPackagerArgs = []
 
     /* Hermes Commands */
-    //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
-    //
-    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
-    // hermesFlags = ["-O", "-output-source-map"]
+//   The hermes compiler command to run. By default it is 'hermesc'
+// hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
+//
+//   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
+// hermesFlags = ["-O", "-output-source-map"]
 }
 
 /**
@@ -73,13 +73,13 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.trackmybreak"
+    namespace 'com.trackmybreak'
     defaultConfig {
-        applicationId "com.trackmybreak"
+        applicationId 'com.trackmybreak'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName '1.0'
     }
     signingConfigs {
         debug {
@@ -87,6 +87,14 @@ android {
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+        }
+        release {
+            if (project.hasProperty('TRACKMYBREAK_UPLOAD_STORE_FILE')) {
+                storeFile file(TRACKMYBREAK_UPLOAD_STORE_FILE)
+                storePassword TRACKMYBREAK_UPLOAD_STORE_PASSWORD
+                keyAlias TRACKMYBREAK_UPLOAD_KEY_ALIAS
+                keyPassword TRACKMYBREAK_UPLOAD_KEY_PASSWORD
+            }
         }
     }
     buildTypes {
@@ -96,16 +104,17 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+            // signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
-    implementation("com.facebook.react:react-android")
+    implementation('com.facebook.react:react-android')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
@@ -114,10 +123,10 @@ dependencies {
 
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
+        implementation('com.facebook.react:hermes-android')
     } else {
         implementation jscFlavor
     }
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: file('../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle'); applyNativeModulesAppBuildGradle(project)
