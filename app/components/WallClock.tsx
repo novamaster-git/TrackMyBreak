@@ -1,51 +1,21 @@
 import {useTheme} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import {useAppSelector} from '../redux/hooks';
 import {fonts} from '../theme/fonts';
 import {hp, wp} from '../utils/responsive.util';
+import {
+  timeDiffCalculator,
+  totalBreakCalculatorInSeconds,
+  totalBreaksCalculatorToFormat,
+} from '../utils/time.util';
 import BlankSpacer from './BlankSpacer';
-type WallClockType = {
-  onPressDate?: () => void;
-  showDate?: boolean;
-};
-function timeDiffCalculator(
-  officein: string,
-  officeout: string,
-  diff: number = 0,
-) {
-  var startTime = moment(officein);
-  var endTime = moment(officeout);
-  var duration = moment.duration(
-    endTime.diff(startTime, 'seconds') - diff,
-    'seconds',
-  );
-  return (
-    duration.hours() +
-    ' h ' +
-    duration.minutes() +
-    ' m ' +
-    duration.seconds() +
-    ' s '
-  );
-}
-function timeConverter(breaks: Array<any>) {
-  const duration = moment.duration(
-    breaks.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.totalBreak,
-      0,
-    ),
-    'seconds',
-  );
-  return `${duration.hours()} h ${duration.minutes()} m ${duration.seconds()} s`;
-}
-function WallClock({
-  showDate = false,
-  onPressDate = () => {},
-}: WallClockType): JSX.Element {
-  const {colors} = useTheme();
 
+function WallClock(): JSX.Element {
+  const {colors} = useTheme();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const breakintervalRef = useRef<NodeJS.Timeout | null>(null);
   const officeOut = useAppSelector(state => state.timeManager.officeOut);
   const officeIn = useAppSelector(state => state.timeManager.officeIn);
   const currentBreak =
@@ -55,61 +25,52 @@ function WallClock({
   const officeOutTime = officeOut
     ? moment(officeOut).format('h:mm:ss a')
     : 'N/A';
-  const intervalRef = useRef(null);
-  const breakintervalRef = useRef(null);
+
   const [timer, setTimer] = useState(
     officeIn && officeOut
       ? timeDiffCalculator(
           officeIn,
           officeOut,
-          moment
-            .duration(
-              breaks.reduce(
-                (accumulator, currentValue) =>
-                  accumulator + currentValue.totalBreak,
-                0,
-              ),
-              'seconds',
-            )
-            .seconds(),
+          totalBreakCalculatorInSeconds(breaks),
         )
-      : '0 h 0 m 0 s',
+      : '0 sec',
   );
-  const [breakTimer, setBreakTimer] = useState('0 h 0 m 0 s');
+  const [breakTimer, setBreakTimer] = useState('0 sec');
 
   useEffect(() => {
     if (officeIn && officeOut?.length === 0 && currentBreak === '') {
+      // this code is added for fast response
+      setTimer(
+        timeDiffCalculator(
+          officeIn,
+          moment().format(),
+          totalBreakCalculatorInSeconds(breaks),
+        ),
+      );
       intervalRef.current = setInterval(() => {
         setTimer(
           timeDiffCalculator(
             officeIn,
             moment().format(),
-            moment
-              .duration(
-                breaks.reduce(
-                  (accumulator, currentValue) =>
-                    accumulator + currentValue.totalBreak,
-                  0,
-                ),
-                'seconds',
-              )
-              .seconds(),
+            totalBreakCalculatorInSeconds(breaks),
           ),
         );
       }, 100);
     }
     if (officeOut || currentBreak) {
-      clearInterval(intervalRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     }
   }, [officeIn, officeOut, currentBreak]);
 
   useEffect(() => {
     if (currentBreak) {
+      // this code is added for fast response
+      setBreakTimer(timeDiffCalculator(currentBreak, moment().format()));
       breakintervalRef.current = setInterval(() => {
         setBreakTimer(timeDiffCalculator(currentBreak, moment().format()));
       }, 100);
     } else {
-      clearInterval(breakintervalRef.current);
+      if (breakintervalRef.current) clearInterval(breakintervalRef.current);
     }
   }, [currentBreak]);
 
@@ -140,7 +101,9 @@ function WallClock({
               {currentBreak ? 'Current Break' : 'Total Break'}
             </Text>
             <Text style={[style.clockTime, {color: 'grey'}]}>
-              {currentBreak ? breakTimer : timeConverter(breaks)}
+              {currentBreak
+                ? breakTimer
+                : totalBreaksCalculatorToFormat(breaks)}
             </Text>
           </View>
         </View>
