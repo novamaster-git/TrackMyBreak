@@ -1,7 +1,6 @@
 import {useNavigation, useTheme} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {
-  Alert,
   FlatList,
   Modal,
   StyleSheet,
@@ -27,6 +26,11 @@ import {
 } from '../../redux/timeManager.slice';
 import {timeDiffCalculator} from '../../utils/time.util';
 import moment from 'moment';
+import {
+  errorMessage,
+  infoMessage,
+  successMessage,
+} from '../../services/inAppNotification.service';
 function Home() {
   const dispatch = useAppDispatch();
   const officeIn = useAppSelector(state => state.timeManager.officeIn);
@@ -49,16 +53,18 @@ function Home() {
 
   function handleOfficeButton() {
     if (currentBreak) {
-      Alert.alert('Please turn off the current break');
+      errorMessage('Please turn off the current break');
       return;
     }
     if (officeIn && officeOut) {
-      Alert.alert('You already signout for the day');
+      infoMessage('You already signout for the day');
       return;
     }
     if (isOfficeIn) {
+      successMessage('Good Night!', "Don't let the bedbugs bite");
       dispatch(setOfficeOutRedux());
     } else {
+      successMessage('Have a nice day');
       dispatch(setOfficeInRedux());
     }
   }
