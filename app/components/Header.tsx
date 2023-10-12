@@ -34,6 +34,11 @@ function Header({
         )}
       </TouchableOpacity>
       <Text style={style.titleText}>{title}</Text>
+      <View style={{height: '100%', flex: 1, paddingBottom:wp(3), paddingLeft:wp(2)}}>
+        <Text style={{color: 'white', flex: 1, verticalAlign: 'bottom'}}>
+          beta
+        </Text>
+      </View>
     </View>
   );
 }

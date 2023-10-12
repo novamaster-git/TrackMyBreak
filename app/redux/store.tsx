@@ -1,8 +1,11 @@
 import {configureStore} from '@reduxjs/toolkit';
 import {createLogger} from 'redux-logger';
+import timeManager from './timeManager.slice';
 const logger = createLogger();
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    timeManager: timeManager,
+  },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       immutableCheck: false,

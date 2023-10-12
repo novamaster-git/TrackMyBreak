@@ -1,6 +1,7 @@
 import {useNavigation, useTheme} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {
+  Alert,
   FlatList,
   Modal,
   StyleSheet,
@@ -17,19 +18,58 @@ import Header from '../../components/Header';
 import WallClock from '../../components/WallClock';
 import {fonts} from '../../theme/fonts';
 import {hp, wp} from '../../utils/responsive.util';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {
+  setOfficeBreakIn,
+  setOfficeBreakOut,
+  setOfficeInRedux,
+  setOfficeOutRedux,
+} from '../../redux/timeManager.slice';
+import {timeDiffCalculator} from '../../utils/time.util';
+import moment from 'moment';
 function Home() {
+  const dispatch = useAppDispatch();
+  const officeIn = useAppSelector(state => state.timeManager.officeIn);
+  const officeOut = useAppSelector(state => state.timeManager.officeOut);
+  const isOfficeIn = useAppSelector(state => state.timeManager.isInOffice);
+  const breaks = useAppSelector(state => state.timeManager.breaks) ?? [];
+  const currentBreak =
+    useAppSelector(state => state.timeManager.currentBreak) ?? '';
   const navigation = useNavigation();
   const {colors} = useTheme();
-  const data = [1, 2, 3, 4, 5, 6];
   const [openSettingModal, setOpenSettingsModal] = useState(false);
+
+  function handleBreak() {
+    if (currentBreak) {
+      dispatch(setOfficeBreakOut());
+    } else {
+      dispatch(setOfficeBreakIn());
+    }
+  }
+
+  function handleOfficeButton() {
+    if (currentBreak) {
+      Alert.alert('Please turn off the current break');
+      return;
+    }
+    if (officeIn && officeOut) {
+      Alert.alert('You already signout for the day');
+      return;
+    }
+    if (isOfficeIn) {
+      dispatch(setOfficeOutRedux());
+    } else {
+      dispatch(setOfficeInRedux());
+    }
+  }
+
   const renderItem = ({item, index}: any) => {
-    const isEnd = index === data.length - 1;
+    const isEnd = index === breaks?.length - 1;
     return (
       <View
         style={{
           width: '100%',
           flexDirection: 'row',
-
           borderBottomColor: 'white',
           borderBottomWidth: wp(0.1),
         }}>
@@ -66,7 +106,9 @@ function Home() {
               <Text style={[style.clockTitle, {color: colors.red}]}>
                 Break in
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {moment(item.breakIn).format('h:mm:ss a') ?? 'N/A'}
+              </Text>
             </View>
           </View>
           <View style={style.singleClock}>
@@ -74,7 +116,11 @@ function Home() {
               <Text style={[style.clockTitle, {color: colors.green}]}>
                 Break out
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {item.breakOut
+                  ? moment(item.breakOut).format('h:mm:ss a')
+                  : 'N/A'}
+              </Text>
             </View>
           </View>
           <View style={style.singleClock}>
@@ -82,7 +128,11 @@ function Home() {
               <Text style={[style.clockTitle, {color: colors.yellow}]}>
                 Total Time
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {item.breakIn && item.breakOut
+                  ? timeDiffCalculator(item.breakIn, item.breakOut)
+                  : 'N/A'}
+              </Text>
             </View>
           </View>
         </View>
@@ -115,7 +165,7 @@ function Home() {
       </View>
       <View style={{backgroundColor: colors.primary, flex: 1}}>
         <FlatList
-          data={data}
+          data={breaks}
           renderItem={renderItem}
           contentContainerStyle={{paddingBottom: wp(1)}}
         />
@@ -137,7 +187,7 @@ function Home() {
             paddingHorizontal: wp(2),
           }}>
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={handleOfficeButton}
             style={{
               backgroundColor: colors.red,
               justifyContent: 'center',
@@ -165,7 +215,7 @@ function Home() {
                 fontSize: wp(5),
                 letterSpacing: wp(0.2),
               }}>
-              Office In
+              {isOfficeIn ? 'Office Out' : 'Office in'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -177,7 +227,8 @@ function Home() {
             paddingHorizontal: wp(2),
           }}>
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={handleBreak}
+            disabled={!isOfficeIn}
             style={{
               backgroundColor: colors.green,
               justifyContent: 'center',
@@ -205,7 +256,7 @@ function Home() {
                 fontSize: wp(5),
                 letterSpacing: wp(0.2),
               }}>
-              Break In
+              {currentBreak ? 'Break Out' : 'Break In'}
             </Text>
           </TouchableOpacity>
         </View>

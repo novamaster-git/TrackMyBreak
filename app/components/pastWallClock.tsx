@@ -2,25 +2,22 @@ import {useTheme} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import Backward from '../assets/images/svg/backward.svg';
+import Forward from '../assets/images/svg/forward.svg';
 import {useAppSelector} from '../redux/hooks';
 import {fonts} from '../theme/fonts';
 import {hp, wp} from '../utils/responsive.util';
 import BlankSpacer from './BlankSpacer';
-type WallClockType = {
+type PastWallClockType = {
   onPressDate?: () => void;
   showDate?: boolean;
+  officeIn?: string;
+  officeOut?: string;
 };
-function timeDiffCalculator(
-  officein: string,
-  officeout: string,
-  diff: number = 0,
-) {
+function timeDiffCalculator(officein: string, officeout: string) {
   var startTime = moment(officein);
   var endTime = moment(officeout);
-  var duration = moment.duration(
-    endTime.diff(startTime, 'seconds') - diff,
-    'seconds',
-  );
+  var duration = moment.duration(endTime.diff(startTime));
   return (
     duration.hours() +
     ' h ' +
@@ -30,88 +27,19 @@ function timeDiffCalculator(
     ' s '
   );
 }
-function timeConverter(breaks: Array<any>) {
-  const duration = moment.duration(
-    breaks.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.totalBreak,
-      0,
-    ),
-    'seconds',
-  );
-  return `${duration.hours()} h ${duration.minutes()} m ${duration.seconds()} s`;
-}
-function WallClock({
+function PastWallClock({
   showDate = false,
   onPressDate = () => {},
-}: WallClockType): JSX.Element {
+  officeIn = '',
+  officeOut = '',
+}: PastWallClockType): JSX.Element {
+  const [timer, setTimer] = useState('N/A');
+  const intervalRef = useRef(null);
   const {colors} = useTheme();
-
-  const officeOut = useAppSelector(state => state.timeManager.officeOut);
-  const officeIn = useAppSelector(state => state.timeManager.officeIn);
-  const currentBreak =
-    useAppSelector(state => state.timeManager.currentBreak) ?? '';
-  const breaks = useAppSelector(state => state.timeManager.breaks) ?? [];
   const officeInTime = officeIn ? moment(officeIn).format('h:mm:ss a') : 'N/A';
   const officeOutTime = officeOut
     ? moment(officeOut).format('h:mm:ss a')
     : 'N/A';
-  const intervalRef = useRef(null);
-  const breakintervalRef = useRef(null);
-  const [timer, setTimer] = useState(
-    officeIn && officeOut
-      ? timeDiffCalculator(
-          officeIn,
-          officeOut,
-          moment
-            .duration(
-              breaks.reduce(
-                (accumulator, currentValue) =>
-                  accumulator + currentValue.totalBreak,
-                0,
-              ),
-              'seconds',
-            )
-            .seconds(),
-        )
-      : '0 h 0 m 0 s',
-  );
-  const [breakTimer, setBreakTimer] = useState('0 h 0 m 0 s');
-
-  useEffect(() => {
-    if (officeIn && officeOut?.length === 0 && currentBreak === '') {
-      intervalRef.current = setInterval(() => {
-        setTimer(
-          timeDiffCalculator(
-            officeIn,
-            moment().format(),
-            moment
-              .duration(
-                breaks.reduce(
-                  (accumulator, currentValue) =>
-                    accumulator + currentValue.totalBreak,
-                  0,
-                ),
-                'seconds',
-              )
-              .seconds(),
-          ),
-        );
-      }, 100);
-    }
-    if (officeOut || currentBreak) {
-      clearInterval(intervalRef.current);
-    }
-  }, [officeIn, officeOut, currentBreak]);
-
-  useEffect(() => {
-    if (currentBreak) {
-      breakintervalRef.current = setInterval(() => {
-        setBreakTimer(timeDiffCalculator(currentBreak, moment().format()));
-      }, 100);
-    } else {
-      clearInterval(breakintervalRef.current);
-    }
-  }, [currentBreak]);
 
   return (
     <View
@@ -121,6 +49,48 @@ function WallClock({
           backgroundColor: colors.secondary,
         },
       ]}>
+      {showDate && (
+        <>
+          <View
+            style={[
+              {
+                width: '90%',
+                flexDirection: 'row',
+                borderRadius: wp(1),
+                paddingHorizontal: wp(2),
+              },
+              {backgroundColor: colors.white, alignItems: 'center'},
+            ]}>
+            <TouchableOpacity
+              style={{
+                paddingVertical: wp(5),
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Backward height={wp(5)} width={wp(5)} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onPressDate} style={style.singleClock}>
+              {/* <View> */}
+              <Text style={[style.clockTitle, {color: colors.red}]}>Date</Text>
+              <Text style={[style.clockTime, {color: 'grey'}]}>
+                12 Sep 2023
+              </Text>
+              {/* </View> */}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: wp(5),
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Forward height={wp(5)} width={wp(5)} />
+            </TouchableOpacity>
+          </View>
+          <BlankSpacer height={hp(2)} />
+        </>
+      )}
       <View style={[style.cardContainer, {backgroundColor: colors.white}]}>
         <View style={style.singleClock}>
           <View>
@@ -137,11 +107,9 @@ function WallClock({
           ]}>
           <View>
             <Text style={[style.clockTitle, {color: colors.green}]}>
-              {currentBreak ? 'Current Break' : 'Total Break'}
+              Ongoing break
             </Text>
-            <Text style={[style.clockTime, {color: 'grey'}]}>
-              {currentBreak ? breakTimer : timeConverter(breaks)}
-            </Text>
+            <Text style={[style.clockTime, {color: 'grey'}]}>1h 2m 20s</Text>
           </View>
         </View>
       </View>
@@ -226,4 +194,4 @@ const style = StyleSheet.create({
     lineHeight: wp(5),
   },
 });
-export default WallClock;
+export default PastWallClock;
