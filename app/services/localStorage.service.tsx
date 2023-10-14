@@ -29,13 +29,14 @@ async function getCurrentDayData(key: string): Promise<CurrentDay | null> {
 }
 async function setOfficeBreakInStorage(key: string, body: string) {
   try {
-    await AsyncStorage.setItem('CURRENT_BREAK', body);
+    // await AsyncStorage.setItem('CURRENT_BREAK', body);
     const result = await AsyncStorage.getItem(key);
     if (result === null) return;
     await AsyncStorage.setItem(
       key,
       JSON.stringify({
         ...JSON.parse(result),
+        currentBreak: body,
         breaks: [...JSON.parse(result).breaks, {breakIn: body, breakOut: ''}],
       }),
     );
@@ -49,7 +50,7 @@ async function setOfficeBreakOutStorage(
   totalBreak: number,
 ) {
   try {
-    await AsyncStorage.setItem('CURRENT_BREAK', '');
+    // await AsyncStorage.setItem('CURRENT_BREAK', '');
     const result = await AsyncStorage.getItem(key);
     if (result === null) return;
     const parsedResult = JSON.parse(result);
@@ -58,14 +59,17 @@ async function setOfficeBreakOutStorage(
       breakOut: body,
       totalBreak: totalBreak,
     };
+    parsedResult.currentBreak = '';
     await AsyncStorage.setItem(key, JSON.stringify(parsedResult));
   } catch (error) {
     console.log(error);
   }
 }
-async function getOfficeBreakInfromStorage() {
+
+async function getAllKeysAsDate() {
   try {
-    await AsyncStorage.getItem('CURRENT_BREAK');
+    const result = await AsyncStorage.getAllKeys();
+    return result;
   } catch (error) {
     console.log(error);
   }
@@ -75,6 +79,6 @@ export {
   setOfficeOut,
   getCurrentDayData,
   setOfficeBreakInStorage,
-  getOfficeBreakInfromStorage,
   setOfficeBreakOutStorage,
+  getAllKeysAsDate,
 };

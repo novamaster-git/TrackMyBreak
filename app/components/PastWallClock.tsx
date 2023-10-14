@@ -1,40 +1,36 @@
 import {useTheme} from '@react-navigation/native';
 import moment from 'moment';
-import React, {useEffect, useRef, useState} from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Backward from '../assets/images/svg/backward.svg';
 import Forward from '../assets/images/svg/forward.svg';
-import {useAppSelector} from '../redux/hooks';
 import {fonts} from '../theme/fonts';
 import {hp, wp} from '../utils/responsive.util';
+import {timeDiffCalculator} from '../utils/time.util';
 import BlankSpacer from './BlankSpacer';
 type PastWallClockType = {
   onPressDate?: () => void;
-  showDate?: boolean;
   officeIn?: string;
   officeOut?: string;
+  workingHours?: string;
+  breakHours?: string;
+  prevPress?: () => void;
+  nextPress?: () => void;
+  nextPressDisabled?: boolean;
+  prevPressDisabled?: boolean;
 };
-function timeDiffCalculator(officein: string, officeout: string) {
-  var startTime = moment(officein);
-  var endTime = moment(officeout);
-  var duration = moment.duration(endTime.diff(startTime));
-  return (
-    duration.hours() +
-    ' h ' +
-    duration.minutes() +
-    ' m ' +
-    duration.seconds() +
-    ' s '
-  );
-}
+
 function PastWallClock({
-  showDate = false,
   onPressDate = () => {},
   officeIn = '',
   officeOut = '',
+  workingHours = '',
+  breakHours = '',
+  prevPress = () => {},
+  nextPress = () => {},
+  nextPressDisabled = false,
+  prevPressDisabled = false,
 }: PastWallClockType): JSX.Element {
-  const [timer, setTimer] = useState('N/A');
-  const intervalRef = useRef(null);
   const {colors} = useTheme();
   const officeInTime = officeIn ? moment(officeIn).format('h:mm:ss a') : 'N/A';
   const officeOutTime = officeOut
@@ -49,55 +45,56 @@ function PastWallClock({
           backgroundColor: colors.secondary,
         },
       ]}>
-      {showDate && (
-        <>
-          <View
-            style={[
-              {
-                width: '90%',
-                flexDirection: 'row',
-                borderRadius: wp(1),
-                paddingHorizontal: wp(2),
-              },
-              {backgroundColor: colors.white, alignItems: 'center'},
-            ]}>
-            <TouchableOpacity
-              style={{
-                paddingVertical: wp(5),
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'center',
-              }}>
-              <Backward height={wp(5)} width={wp(5)} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onPressDate} style={style.singleClock}>
-              {/* <View> */}
-              <Text style={[style.clockTitle, {color: colors.red}]}>Date</Text>
-              <Text style={[style.clockTime, {color: 'grey'}]}>
-                12 Sep 2023
-              </Text>
-              {/* </View> */}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                paddingVertical: wp(5),
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'center',
-              }}>
-              <Forward height={wp(5)} width={wp(5)} />
-            </TouchableOpacity>
-          </View>
-          <BlankSpacer height={hp(2)} />
-        </>
-      )}
+      <View
+        style={[
+          {
+            width: '90%',
+            flexDirection: 'row',
+            borderRadius: wp(1),
+            paddingHorizontal: wp(2),
+          },
+          {backgroundColor: colors.white, alignItems: 'center'},
+        ]}>
+        <TouchableOpacity
+          disabled={prevPressDisabled}
+          onPress={prevPress}
+          style={{
+            paddingVertical: wp(5),
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}>
+          <Backward height={wp(5)} width={wp(5)} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onPressDate} style={style.singleClock}>
+          <Text style={[style.clockTitle, {color: colors.red}]}>Date</Text>
+          <Text style={[style.clockTime, {color: 'grey'}]}>
+            {moment(officeIn).format('Do MMM YY')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          disabled={nextPressDisabled}
+          onPress={nextPress}
+          style={{
+            paddingVertical: wp(5),
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}>
+          <Forward height={wp(5)} width={wp(5)} />
+        </TouchableOpacity>
+      </View>
+      <BlankSpacer height={hp(2)} />
+
       <View style={[style.cardContainer, {backgroundColor: colors.white}]}>
         <View style={style.singleClock}>
           <View>
             <Text style={[style.clockTitle, {color: colors.red}]}>
               Work Served
             </Text>
-            <Text style={[style.clockTime, {color: 'grey'}]}>{timer}</Text>
+            <Text style={[style.clockTime, {color: 'grey'}]}>
+              {workingHours}
+            </Text>
           </View>
         </View>
         <View
@@ -107,9 +104,9 @@ function PastWallClock({
           ]}>
           <View>
             <Text style={[style.clockTitle, {color: colors.green}]}>
-              Ongoing break
+              Total Break
             </Text>
-            <Text style={[style.clockTime, {color: 'grey'}]}>1h 2m 20s</Text>
+            <Text style={[style.clockTime, {color: 'grey'}]}>{breakHours}</Text>
           </View>
         </View>
       </View>
@@ -181,7 +178,7 @@ const style = StyleSheet.create({
   singleClock: {
     flex: 1,
     paddingHorizontal: wp(2),
-    // alignItems: 'center',
+    alignItems: 'center',
   },
   clockTitle: {
     fontFamily: fonts.RobotoMedium,

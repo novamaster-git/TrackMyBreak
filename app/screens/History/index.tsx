@@ -1,5 +1,6 @@
 import {useNavigation, useTheme} from '@react-navigation/native';
-import React, {useState} from 'react';
+import moment from 'moment';
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   Modal,
@@ -11,17 +12,70 @@ import {
 import DatePicker from 'react-native-date-picker';
 import BlankSpacer from '../../components/BlankSpacer';
 import Header from '../../components/Header';
-import WallClock from '../../components/WallClock';
+import PastWallClock from '../../components/PastWallClock';
+import {CurrentDay} from '../../model/currentDay.model';
+import {
+  errorMessage,
+  infoMessage,
+} from '../../services/inAppNotification.service';
+import {
+  getAllKeysAsDate,
+  getCurrentDayData,
+} from '../../services/localStorage.service';
 import {fonts} from '../../theme/fonts';
+import {generateKey} from '../../utils/keyGenerator.util';
 import {hp, wp} from '../../utils/responsive.util';
+import {
+  timeDiffCalculator,
+  totalBreakCalculatorInSeconds,
+  totalBreaksCalculatorToFormat,
+} from '../../utils/time.util';
 function History() {
   const navigation = useNavigation();
   const {colors} = useTheme();
-  const data = [1, 2, 3, 4, 5, 6];
   const [openSettingModal, setOpenSettingsModal] = useState(false);
   const [date, setDate] = useState(new Date());
+  const [allDates, setAllDates] = useState<Array<any>>([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [selectedDateInformation, setSelectedDateInformation] =
+    useState<CurrentDay>({});
+  useEffect(getAllAvailableDates, []);
+  function getAllAvailableDates() {
+    getAllKeysAsDate().then(result => {
+      if (result) {
+        setAllDates(result);
+        setCurrentIndex(result.length - 2);
+      } else {
+        infoMessage('No Recordes Yet');
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (currentIndex > -1) {
+      getCurrentDayData(allDates[currentIndex])
+        .then(result => setSelectedDateInformation(result))
+        .catch(error => errorMessage('Failed to get data'));
+    }
+  }, [currentIndex]);
+
+  function handleNext() {
+    if (allDates.length - 2 > currentIndex) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      errorMessage('No More Recorders');
+    }
+  }
+  function handlePrev() {
+    if (currentIndex !== 0) {
+      setCurrentIndex(prev => prev - 1);
+    } else {
+      errorMessage('No More Recorders past');
+    }
+  }
+
   const renderItem = ({item, index}: any) => {
-    const isEnd = index === data.length - 1;
+    const isEnd = index === selectedDateInformation?.breaks.length - 1;
     return (
       <View
         style={{
@@ -64,7 +118,9 @@ function History() {
               <Text style={[style.clockTitle, {color: colors.red}]}>
                 Break in
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {moment(item.breakIn).format('HH:MM:SS a')}
+              </Text>
             </View>
           </View>
           <View style={style.singleClock}>
@@ -72,7 +128,9 @@ function History() {
               <Text style={[style.clockTitle, {color: colors.green}]}>
                 Break out
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {moment(item.breakOut).format('HH:MM:SS a')}
+              </Text>
             </View>
           </View>
           <View style={style.singleClock}>
@@ -80,7 +138,9 @@ function History() {
               <Text style={[style.clockTitle, {color: colors.yellow}]}>
                 Total Time
               </Text>
-              <Text style={[style.clockTime, {color: 'white'}]}>1h 2m 20s</Text>
+              <Text style={[style.clockTime, {color: 'white'}]}>
+                {timeDiffCalculator(item.breakIn, item.breakOut)}
+              </Text>
             </View>
           </View>
         </View>
@@ -96,12 +156,24 @@ function History() {
           navigation.goBack();
         }}
       />
-      <WallClock
-        showDate={true}
+      <PastWallClock
         onPressDate={() => {
           setOpenSettingsModal(true);
         }}
+        nextPress={handleNext}
+        prevPress={handlePrev}
+        officeIn={selectedDateInformation.officeIn}
+        officeOut={selectedDateInformation.officeOut}
+        breakHours={totalBreaksCalculatorToFormat(
+          selectedDateInformation?.breaks ?? [],
+        )}
+        workingHours={timeDiffCalculator(
+          selectedDateInformation?.officeIn ?? '',
+          selectedDateInformation.officeOut ?? '',
+          totalBreakCalculatorInSeconds(selectedDateInformation?.breaks ?? []),
+        )}
       />
+
       <View
         style={{
           backgroundColor: colors.greyBlue,
@@ -119,7 +191,7 @@ function History() {
       </View>
       <View style={{backgroundColor: colors.primary, flex: 1}}>
         <FlatList
-          data={data}
+          data={selectedDateInformation?.breaks ?? []}
           renderItem={renderItem}
           contentContainerStyle={{paddingBottom: wp(1)}}
         />
