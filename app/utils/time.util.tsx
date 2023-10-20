@@ -22,7 +22,7 @@ function timeDiffCalculator(
     duration.minutes() !== 0 &&
     duration.seconds() !== 0
   ) {
-    return duration.minutes() + ' min' + duration.seconds() + ' sec';
+    return duration.minutes() + ' min ' + duration.seconds() + ' sec';
   } else {
     return (
       duration.hours() +
