@@ -9,11 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-native-date-picker';
 import BlankSpacer from '../../components/BlankSpacer';
 import Header from '../../components/Header';
 import PastWallClock from '../../components/PastWallClock';
 import {CurrentDay} from '../../model/currentDay.model';
+import DatePicker from 'react-native-modern-datepicker';
 import {
   errorMessage,
   infoMessage,
@@ -34,8 +35,10 @@ function History() {
   const navigation = useNavigation();
   const {colors} = useTheme();
   const [openSettingModal, setOpenSettingsModal] = useState(false);
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(moment().subtract(1, 'days').toDate());
+  const [lastDate, setLastDate] = useState('');
   const [allDates, setAllDates] = useState<Array<any>>([]);
+  const [selectedCalenderDate, setSelectedCalenderDate] = useState('');
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [selectedDateInformation, setSelectedDateInformation] =
     useState<CurrentDay>({});
@@ -52,6 +55,15 @@ function History() {
   }
 
   useEffect(() => {
+    console.log(allDates);
+    if (allDates.length) {
+      getCurrentDayData(allDates[0])
+        .then(result => setLastDate(result?.date))
+        .catch(error => errorMessage('Failed to get data'));
+    }
+  }, [allDates]);
+
+  useEffect(() => {
     if (currentIndex > -1) {
       getCurrentDayData(allDates[currentIndex])
         .then(result => setSelectedDateInformation(result))
@@ -59,8 +71,16 @@ function History() {
     }
   }, [currentIndex]);
 
+  function changeDateFromCalender(date: string) {
+    const convertedDate = date.replace(/\//g, '_');
+    console.log(convertedDate, 'DATE_CON');
+    getCurrentDayData(convertedDate)
+      .then(result => setSelectedDateInformation(result))
+      .catch(error => errorMessage('Failed to get data'));
+  }
+
   function handleNext() {
-    if (allDates.length - 2 > currentIndex) {
+    if (allDates.length - 1 > currentIndex) {
       setCurrentIndex(prev => prev + 1);
     } else {
       errorMessage('No More Recorders');
@@ -196,9 +216,11 @@ function History() {
           contentContainerStyle={{paddingBottom: wp(1)}}
         />
       </View>
+
       <Modal
         visible={openSettingModal}
         transparent={true}
+        onRequestClose={() => setOpenSettingsModal(false)}
         animationType="slide">
         <View style={{flex: 1, backgroundColor: '#0000002f'}}>
           <TouchableOpacity
@@ -223,7 +245,7 @@ function History() {
           </View>
           <View
             style={{
-              height: hp(35),
+              height: hp(75),
               backgroundColor: 'white',
               borderTopRightRadius: wp(4),
               borderTopLeftRadius: wp(4),
@@ -240,10 +262,12 @@ function History() {
               Pickup Date
             </Text>
             <DatePicker
-              date={date}
-              onDateChange={setDate}
-              mode="date"
-              minimumDate={new Date()}
+              minimumDate={
+                lastDate ? moment(lastDate).format('YYYY-MM-DD') : ''
+              }
+              maximumDate={moment().subtract(1, 'days').format('YYYY-MM-DD')}
+              onSelectedChange={(date: any) => setSelectedCalenderDate(date)}
+              mode="calendar"
             />
             <View
               style={{
@@ -272,7 +296,10 @@ function History() {
               </TouchableOpacity>
               <BlankSpacer width={wp(2)} />
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => {
+                  changeDateFromCalender(selectedCalenderDate);
+                  setOpenSettingsModal(false);
+                }}
                 style={{
                   backgroundColor: colors.green,
                   justifyContent: 'center',

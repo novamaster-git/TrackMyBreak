@@ -294,7 +294,7 @@ function Home() {
           </View>
           <View
             style={{
-              height: hp(15),
+              height: hp(20),
               backgroundColor: 'white',
               borderTopRightRadius: wp(4),
               borderTopLeftRadius: wp(4),
